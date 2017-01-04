@@ -2,7 +2,7 @@ package poclunrjs.Util;
 
 public enum SparkowConstant {
 
-    LIBELLE_WEB("Libelle_web"), PRODUCT_URL("ProductURL"), IMAGE_URL("Medium_Img_Url_1");
+    LIBELLE_WEB("Libelle_web"), ID_PRODUCT("ProdCustId"), IMAGE_URL("Medium_Img_Url_1");
     private String label;
 
     SparkowConstant(String attributeId) {

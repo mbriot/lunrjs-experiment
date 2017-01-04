@@ -30,12 +30,12 @@ public class Categories {
 
         String webLabelCode;
         String imageUrlCode;
-        String productUrlCode;
+        String productId;
         Map<String, String> labelFromCodeAttribute = new HashMap<>();
         Map<String, String> codeFromLabelAttribute = new HashMap<>();
         getCodeAndLabelsMap(sparkowCategorieResponse, labelFromCodeAttribute, codeFromLabelAttribute);
         webLabelCode = labelFromCodeAttribute.get(LIBELLE_WEB.getLabel());
-        productUrlCode = labelFromCodeAttribute.get(PRODUCT_URL.getLabel());
+        productId = labelFromCodeAttribute.get(ID_PRODUCT.getLabel());
         imageUrlCode = labelFromCodeAttribute.get(IMAGE_URL.getLabel());
 
         List<Product> products = new ArrayList<>();
@@ -71,9 +71,8 @@ public class Categories {
             Product product = new Product();
             List<SparkowAttribute> sparkowAttributes = sparkowProduct.getSparkowAttributes();
             for (SparkowAttribute sparkowAttribute : sparkowAttributes) {
-                if (productUrlCode.equals(sparkowAttribute.getAttributeDefinitionCode())) {
-                    String productId = getProductIdFromURL(sparkowAttribute.getValue());
-                    product.setProductId(productId);
+                if (productId.equals(sparkowAttribute.getAttributeDefinitionCode())) {
+                    product.setProductId(sparkowAttribute.getValue());
                 } else if (imageUrlCode.equals(sparkowAttribute.getAttributeDefinitionCode())) {
                     product.setImageUrl("http://decathlon.fr/media/" + sparkowAttribute.getValue());
                 } else if (webLabelCode.equals(sparkowAttribute.getAttributeDefinitionCode())) {

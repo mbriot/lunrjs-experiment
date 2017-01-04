@@ -1,14 +1,10 @@
-importScripts('https://cdnjs.cloudflare.com/ajax/libs/lunr.js/0.7.1/lunr.min.js');
-var indexFilter = lunr(function () {
-    this.field('wordToIndex');
-    this.ref('productId');
-});
+importScripts('/js/decatIndex.js');
 
-var indexProductName = lunr(function () {
-    this.field('productName');
-    this.ref('productId');
+var idx = new DecatIndex(
+	{ref : "productId", 
+		fieldsToIndex : [{name : 'productName',type : 'string'},{name : 'wordToIndex',type : 'string'}], 
+		fieldsToStore : ['imageUrl','productName']
 });
-var store = {};
 
 var filters;
 
@@ -20,12 +16,12 @@ self.addEventListener('message', function(e) {
             postMessage({"type" : "indexation-done","message":"indexation done"});
             break;
         case "free-search":
-            var results = search(e.data.searchedtext,"freeSearch");
+            var results = idx.search(e.data.searchedtext,"freeSearch");
             postMessage({"type":"free-search-results","results":results});
             break;
         case "filter-search":
             console.log("filter-search for : " + e.data.searchedtext);
-            var results = search(e.data.searchedtext,"filterSearch");
+            var results = idx.search(e.data.searchedtext);
             var resultsByFilters = numberOfResultByFilterValue(e.data.searchedtext);
             postMessage(
                 {"type":"filter-search-results",
@@ -44,37 +40,17 @@ self.addEventListener('message', function(e) {
 
 var buildIndex = function(products){
     for(var i = 0;i<products.length;i++){
-        indexFilter.add({
-            productId: products[i].productId,
-            wordToIndex : products[i].wordToIndex
-        });
-        indexProductName.add({
-            productId: products[i].productId,
-            productName : products[i].productName
-        });
-        store[products[i].productId] = {
-            productId: products[i].productId,
-            productName: products[i].productName,
-            imageUrl: products[i].imageUrl
-        };
+        idx.indexDoc(products[i]);
     }
 };
 
 var search =  function(searchText,searchType) {
-    var searchResults = (searchType === "freeSearch") ? indexProductName.search(searchText) : indexFilter.search(searchText);
-    var results = [];
-    for(var i = 0;i < searchResults.length ;i++){
-        var productId = store[searchResults[i].ref].productId;
-        var imageUrl = store[searchResults[i].ref].imageUrl;
-        var productName = store[searchResults[i].ref].productName;
-        results.push({productId:productId,imageUrl:imageUrl,productName:productName});
-    }
-    return results;
+    return ;
 };
 
 var numberOfResultByFilterValue = function(actualSearch){
     var resultsByFilters = [];
-    var actualNumberOfResults = indexFilter.search(actualSearch).length;
+    var actualNumberOfResults = idx.search(actualSearch).length;
     for(var i = 0; i < filters.length; i++) {
         var resultByFilter = [];
         var filterName = filters[i].filterName;
@@ -82,7 +58,7 @@ var numberOfResultByFilterValue = function(actualSearch){
         for(var j = 0;j<filterValues.length;j++){
             var formattedValue = filterValues[j].split(" ").join("");
             var withThisFilter = actualSearch + " " + formattedValue;
-            var results = indexFilter.search(withThisFilter);
+            var results = idx.search(withThisFilter);
             var numberOfResults = results.length;
             var isPertinent = numberOfResults > 0 && numberOfResults < actualNumberOfResults;
             if(!isPertinent){
@@ -106,8 +82,7 @@ var initResultByFilters = function () {
         var filterValues = filters[i].values;
         for(var j = 0;j<filterValues.length;j++){
             var formattedValue = filterValues[j].split(" ").join("");
-            var withThisFilter = formattedValue;
-            var results = indexFilter.search(withThisFilter);
+            var results = idx.search(formattedValue);
             var numberOfResults = results.length;
             resultByFilter.push([formattedValue,numberOfResults]);
         }
