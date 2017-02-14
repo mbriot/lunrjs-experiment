@@ -12,6 +12,7 @@
             case "filter-search-results":
                 displayResults(e.data.results);
                 manageFilters(e.data.resultsByFilters);
+                displayRemoveFilter();
                 break;
             case "init-values-by-filters-results":
                 manageFilters(e.data.resultsByFilters);
@@ -39,7 +40,6 @@
             selectedFilters.push(selectedVal.split(" ").join(""));
             var searchedtext = selectedFilters.join(" ");
             worker.postMessage({'operation':'filter-search','searchedtext':searchedtext});
-            displayRemoveFilter();
         });
 
         $(".remove-filter span").on("click", function(){
@@ -50,6 +50,12 @@
             worker.postMessage({'operation':'init-values-by-filters'});
             displayAllProduct();
         });
+        
+        var filterValuesUrl = getFilterValuesUrl(window.location.pathname);
+        if (filterValuesUrl.length > 0) {
+            worker.postMessage({'operation':'filter-search-by-url','filterValuesUrl':filterValuesUrl});
+        }
+        
     });
 
     var displayResults = function (results) {
@@ -119,5 +125,18 @@
     var displayRemoveFilter = function(){
         $(".remove-filter").removeClass("nofilter");
     };
+    
+    var getFilterValuesUrl = function(path) {
+        var filterValuesUrl = [];
+        var pathSplitted = path.split('/');
+        for (var i = 0; i < pathSplitted.length; i++) {
+            var pathElement = pathSplitted[i];
+            if (pathElement.indexOf('N-') === 0) {
+                filterValuesUrl.push('/' + pathElement);
+            }
+        }
+        return filterValuesUrl;
+    };
+    
 } )(jQuery);
 

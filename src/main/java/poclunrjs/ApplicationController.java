@@ -15,7 +15,7 @@ public class ApplicationController {
     @Autowired
     Categories categories;
 
-    @RequestMapping("/list/{id}")
+    @RequestMapping({"/C-{id}-*/**", "/C-{id}"})
     public String listPage(@PathVariable(value = "id") String id, Model model) throws IOException {
         TimeCounter timeCounter = new TimeCounter();
         timeCounter.start();

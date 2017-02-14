@@ -7,7 +7,7 @@ import java.util.List;
 public class Filter implements Serializable {
 
     private String filterName;
-    private List<String> values = new ArrayList<>();
+    private List<FilterValue> values = new ArrayList<>();
 
     public String getFilterName() {
         return filterName;
@@ -17,15 +17,15 @@ public class Filter implements Serializable {
         this.filterName = filterName;
     }
 
-    public List<String> getValues() {
+    public List<FilterValue> getValues() {
         return values;
     }
 
-    public void setValues(List<String> values) {
+    public void setValues(List<FilterValue> values) {
         this.values = values;
     }
 
-    public void addValue(String value) {
+    public void addValue(FilterValue value) {
         this.values.add(value);
     }
 
