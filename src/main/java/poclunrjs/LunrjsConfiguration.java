@@ -23,7 +23,16 @@ public class LunrjsConfiguration {
 
     @Bean
     SparkowRequester sparkowRequester(){
-        return new SparkowRequester(env.getProperty("sparkow.host"));
+		SparkowRequester sparkowRequester = new SparkowRequester(env.getProperty("sparkow.host"));
+		boolean isProxyUsed = Boolean.parseBoolean(env.getProperty("proxy.use"));
+		sparkowRequester.setIsProxyUsed(isProxyUsed);
+		if (isProxyUsed) {
+			sparkowRequester.setProxyHost(env.getProperty("proxy.host"));
+			sparkowRequester.setProxyPort(Integer.parseInt(env.getProperty("proxy.port")));
+			sparkowRequester.setProxyUsername(env.getProperty("proxy.username"));
+			sparkowRequester.setProxyPassword(env.getProperty("proxy.password"));
+		}
+        return sparkowRequester;
     }
 
     @Bean
