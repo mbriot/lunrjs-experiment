@@ -24,14 +24,17 @@ self.addEventListener('message', function(e) {
             postMessage({"type":"free-search-results","results":results});
             break;
         case "filter-search":
-            console.log("filter-search for : " + e.data.searchedtext);
-            postFilterSearchResult(e.data.searchedtext);
+            console.log("filter-search for : " + e.data.selectedFilters);
+            var filtersToApply = getFiltersByProperty(e.data.selectedFilters, 'value');
+            var searchedtext = getSearchedText(filtersToApply);
+            var url = getUrl(filtersToApply);
+            postFilterSearchResult(searchedtext, url);
             break;
         case "filter-search-by-url":
-            console.log("filter-search-by-url for : " + e.data.filterValuesUrl);
-            var filtersToApply = getFiltersFromUrl(e.data.filterValuesUrl);
+            console.log("filter-search-by-url for : " + e.data.selectedFilters);
+            var filtersToApply = getFiltersByProperty(e.data.selectedFilters, 'url');
             if (filtersToApply.length > 0) {
-                var searchedtext = filtersToApply.join(" ");
+                var searchedtext = getSearchedText(filtersToApply);
                 postFilterSearchResult(searchedtext);
             }
             break;
@@ -100,20 +103,37 @@ var numberOfResultByFilterValue = function(actualSearch){
     return resultsByFilters;
 };
 
-var getFiltersFromUrl = function(filterValuesUrl) {
+var getFiltersByProperty = function(selectedFilters, property) {
     var filtersToApply = [];
     for(var i = 0; i < filters.length; i++) {
         var filterValues = filters[i].values;
         for(var j = 0; j < filterValues.length; j++) {
-            for(var k = 0; k < filterValuesUrl.length; k++){
-                if (filterValues[j].url === filterValuesUrl[k]) {
-                    filtersToApply.push(filterValues[j].value.split(" ").join(""));
-                    filterValuesUrl.splice(k, 1);
+            for(var k = 0; k < selectedFilters.length; k++){
+                if (filterValues[j][property] === selectedFilters[k]) {
+                    filtersToApply.push(filterValues[j]);
+                    break;
                 }
             }
         }
     }
     return filtersToApply;
+}
+
+var getSearchedText = function(filtersToApply) {
+    var searchedText = [];
+    for (var i = 0; i < filtersToApply.length; i++) {
+        searchedText.push(filtersToApply[i].value.split(" ").join(""));
+    }
+    return searchedText.join(" ");
+};
+
+
+var getUrl = function(filtersToApply) {
+    var url = '';
+    for(var i = 0; i < filtersToApply.length; i++) {
+        url += filtersToApply[i].url;
+    }
+    return url;
 };
 
 var initResultByFilters = function () {
@@ -134,12 +154,13 @@ var initResultByFilters = function () {
     return resultsByFilters;
 };
 
-var postFilterSearchResult = function(searchedtext) {
+var postFilterSearchResult = function(searchedtext, url) {
     var results = search(searchedtext, "filterSearch");
     var resultsByFilters = numberOfResultByFilterValue(searchedtext);
     postMessage({
         "type" : "filter-search-results",
         "results" : results,
-        "resultsByFilters" : resultsByFilters
+        "resultsByFilters" : resultsByFilters,
+        "url": url
     });
 }

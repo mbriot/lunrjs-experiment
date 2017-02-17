@@ -13,6 +13,10 @@
                 displayResults(e.data.results);
                 manageFilters(e.data.resultsByFilters);
                 displayRemoveFilter();
+                if (e.data.url) {
+                    var url = getCategory(window.location.pathname) + e.data.url;
+                    history.pushState({}, '', url);
+                }
                 break;
             case "init-values-by-filters-results":
                 manageFilters(e.data.resultsByFilters);
@@ -24,8 +28,10 @@
 
     worker.postMessage({'operation':'index','products':products,'filters':filters});
     worker.postMessage({'operation':'init-values-by-filters'});
+    
 
     $(document).ready(function (e) {
+        var category = getCategory(window.location.pathname);
 
         var $productsFilter = $("#free-search");
         $productsFilter.bind("keyup", function () {
@@ -37,9 +43,8 @@
         var selectedFilters = [];
         $(".filter-name li a").on("click", function(){
             var selectedVal = $(this).attr("data-value");
-            selectedFilters.push(selectedVal.split(" ").join(""));
-            var searchedtext = selectedFilters.join(" ");
-            worker.postMessage({'operation':'filter-search','searchedtext':searchedtext});
+            selectedFilters.push(selectedVal);
+            worker.postMessage({'operation':'filter-search','selectedFilters':selectedFilters});
         });
 
         $(".remove-filter span").on("click", function(){
@@ -48,15 +53,26 @@
             $(".filter-value").removeClass("novalue");
             $(".remove-filter").addClass("nofilter");
             worker.postMessage({'operation':'init-values-by-filters'});
+            history.pushState({}, '', category);
             displayAllProduct();
         });
         
-        var filterValuesUrl = getFilterValuesUrl(window.location.pathname);
-        if (filterValuesUrl.length > 0) {
-            worker.postMessage({'operation':'filter-search-by-url','filterValuesUrl':filterValuesUrl});
+        var selectedFilters = getSelectedFilters(window.location.pathname);
+        if (selectedFilters.length > 0) {
+            worker.postMessage({'operation':'filter-search-by-url','selectedFilters':selectedFilters});
         }
         
     });
+    
+    var getCategory = function(url) {
+        if (url.length > 0) {
+            var urlSplitted = url.split('/');
+            if (urlSplitted[1] && urlSplitted[1].indexOf('C-') === 0) {
+                return '/' + urlSplitted[1];
+            }
+        }
+        return '';
+    }
 
     var displayResults = function (results) {
         var newProductList = [];
@@ -126,7 +142,7 @@
         $(".remove-filter").removeClass("nofilter");
     };
     
-    var getFilterValuesUrl = function(path) {
+    var getSelectedFilters = function(path) {
         var filterValuesUrl = [];
         var pathSplitted = path.split('/');
         for (var i = 0; i < pathSplitted.length; i++) {
@@ -137,6 +153,7 @@
         }
         return filterValuesUrl;
     };
+    
     
 } )(jQuery);
 
