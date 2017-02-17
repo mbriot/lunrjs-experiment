@@ -25,12 +25,15 @@ self.addEventListener('message', function(e) {
             break;
         case "filter-search":
             console.log("filter-search for : " + e.data.searchedtext);
-            var results = search(e.data.searchedtext,"filterSearch");
-            var resultsByFilters = numberOfResultByFilterValue(e.data.searchedtext);
-            postMessage(
-                {"type":"filter-search-results",
-                 "results":results,
-                 "resultsByFilters":resultsByFilters});
+            postFilterSearchResult(e.data.searchedtext);
+            break;
+        case "filter-search-by-url":
+            console.log("filter-search-by-url for : " + e.data.filterValuesUrl);
+            var filtersToApply = getFiltersFromUrl(e.data.filterValuesUrl);
+            if (filtersToApply.length > 0) {
+                var searchedtext = filtersToApply.join(" ");
+                postFilterSearchResult(searchedtext);
+            }
             break;
         case "init-values-by-filters":
             var resultsByFilters = initResultByFilters();
@@ -80,7 +83,7 @@ var numberOfResultByFilterValue = function(actualSearch){
         var filterName = filters[i].filterName;
         var filterValues = filters[i].values;
         for(var j = 0;j<filterValues.length;j++){
-            var formattedValue = filterValues[j].split(" ").join("");
+            var formattedValue = filterValues[j].value.split(" ").join("");
             var withThisFilter = actualSearch + " " + formattedValue;
             var results = indexFilter.search(withThisFilter);
             var numberOfResults = results.length;
@@ -97,6 +100,21 @@ var numberOfResultByFilterValue = function(actualSearch){
     return resultsByFilters;
 };
 
+var getFiltersFromUrl = function(filterValuesUrl) {
+    var filtersToApply = [];
+    for(var i = 0; i < filters.length; i++) {
+        var filterValues = filters[i].values;
+        for(var j = 0; j < filterValues.length; j++) {
+            for(var k = 0; k < filterValuesUrl.length; k++){
+                if (filterValues[j].url === filterValuesUrl[k]) {
+                    filtersToApply.push(filterValues[j].value.split(" ").join(""));
+                    filterValuesUrl.splice(k, 1);
+                }
+            }
+        }
+    }
+    return filtersToApply;
+};
 
 var initResultByFilters = function () {
     var resultsByFilters = [];
@@ -105,7 +123,7 @@ var initResultByFilters = function () {
         var filterName = filters[i].filterName;
         var filterValues = filters[i].values;
         for(var j = 0;j<filterValues.length;j++){
-            var formattedValue = filterValues[j].split(" ").join("");
+            var formattedValue = filterValues[j].value.split(" ").join("");
             var withThisFilter = formattedValue;
             var results = indexFilter.search(withThisFilter);
             var numberOfResults = results.length;
@@ -115,3 +133,13 @@ var initResultByFilters = function () {
     }
     return resultsByFilters;
 };
+
+var postFilterSearchResult = function(searchedtext) {
+    var results = search(searchedtext, "filterSearch");
+    var resultsByFilters = numberOfResultByFilterValue(searchedtext);
+    postMessage({
+        "type" : "filter-search-results",
+        "results" : results,
+        "resultsByFilters" : resultsByFilters
+    });
+}

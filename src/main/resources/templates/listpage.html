@@ -32,8 +32,8 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="Pratique">
-                        <li th:each="value : ${filter.values}">
-                            <a th:text="${value}" data-th-attr="data-value=${value}" th:id="${#strings.replace(value,' ','')}" class="filter-value novalue"></a>
+                        <li th:each="filterValue : ${filter.values}">
+                            <a th:text="${filterValue.value}" data-th-attr="data-value=${filterValue.value}" th:id="${#strings.replace(filterValue.value,' ','')}" class="filter-value novalue"></a>
                         </li>
                     </ul>
                 </div>

@@ -8,8 +8,15 @@ public class SparkowFilterValue {
 
     @JsonProperty("Label")
     private String label;
+	
+    @JsonProperty("PartialUrl")
+    private String url;
 
     public String getLabel() {
         return label;
+    }
+	
+	public String getUrl() {
+        return url;
     }
 }

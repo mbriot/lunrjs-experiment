@@ -3,6 +3,7 @@ package poclunrjs;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.cache.annotation.Cacheable;
 import poclunrjs.pojo.Filter;
+import poclunrjs.pojo.FilterValue;
 import poclunrjs.pojo.Product;
 import poclunrjs.pojo.CategoriePage;
 import poclunrjs.pojo.categoriesPOJO.*;
@@ -62,7 +63,8 @@ public class Categories {
             Filter filter = new Filter();
             filter.setFilterName(codeFromLabelAttribute.get(code));
             for (SparkowFilterValue value : values) {
-                filter.getValues().add(value.getLabel());
+                FilterValue filterValue = new FilterValue(value.getLabel(), value.getUrl());
+                filter.getValues().add(filterValue);
             }
             filters.add(filter);
         }
